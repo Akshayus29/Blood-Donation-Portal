@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donation Portal</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 40px; background-color: #f8f9fa; color: #333; }
+        .container { max-width: 950px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0px 4px 20px rgba(0,0,0,0.1); }
+        h1, h2 { color: #c0392b; text-align: center; }
+        .section { background: #fff5f5; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #f5c6cb; }
+        .search-box { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; align-items: center; }
+        input, select { padding: 12px; border: 1px solid #ccc; border-radius: 5px; width: 100%; box-sizing: border-box; font-size: 14px; }
+        button { background-color: #c0392b; color: white; border: none; padding: 12px 20px; cursor: pointer; border-radius: 5px; font-weight: bold; transition: 0.3s; }
+        button:hover { background-color: #a93226; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #c0392b; color: white; }
+        .blood-tag { background: #e74c3c; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; }
+        .nav-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .back-btn { text-decoration: none; color: #c0392b; font-weight: bold; font-size: 14px; }
+        
+        /* Message Box Style */
+        .message-box {
+            padding: 15px; 
+            background-color: #d4edda; 
+            color: #155724; 
+            border: 1px solid #c3e6cb; 
+            border-radius: 5px; 
+            margin-bottom: 20px; 
+            text-align: center; 
+            font-weight: bold;
+        }
+
+        /* Error Label Style */
+        .error-text { color: #c0392b; font-size: 13px; font-weight: bold; display: block; margin-top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="nav-header">
+            <a href="/" class="back-btn">← Back to Home</a>
+            <h1>🩸 LifeSource Blood Bank</h1>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="message-box">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <div class="section">
+            <h3>Find a Donor</h3>
+            <form method="GET" action="" class="search-box">
+                <select name="blood_group" style="flex: 1;">
+                    <option value="">All Blood Groups</option>
+                    <option value="A+">A+</option><option value="A-">A-</option>
+                    <option value="B+">B+</option><option value="B-">B-</option>
+                    <option value="O+">O+</option><option value="O-">O-</option>
+                    <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                </select>
+                
+                <select name="location" style="flex: 1;">
+                    <option value="">All Districts</option>
+                    <option value="Thiruvananthapuram">Thiruvananthapuram</option>
+                    <option value="Kollam">Kollam</option>
+                    <option value="Pathanamthitta">Pathanamthitta</option>
+                    <option value="Alappuzha">Alappuzha</option>
+                    <option value="Kottayam">Kottayam</option>
+                    <option value="Idukki">Idukki</option>
+                    <option value="Ernakulam">Ernakulam</option>
+                    <option value="Thrissur">Thrissur</option>
+                    <option value="Palakkad">Palakkad</option>
+                    <option value="Malappuram">Malappuram</option>
+                    <option value="Kozhikode">Kozhikode</option>
+                    <option value="Wayanad">Wayanad</option>
+                    <option value="Kannur">Kannur</option>
+                    <option value="Kasaragod">Kasaragod</option>
+                </select>
+                
+                <button type="submit">Search</button>
+                <a href="/register/"><button type="button" style="background:#7f8c8d;">Reset</button></a>
+            </form>
+        </div>
+
+        <div class="section">
+            <h3>Register as a Donor</h3>
+            <form method="POST" novalidate> 
+                {% csrf_token %}
+                
+                {% if form.errors %}
+                    <div style="color: #c0392b; background: #ffdada; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
+                        <strong>Please fix the errors below:</strong>
+                        {{ form.non_field_errors }}
+                    </div>
+                {% endif %}
+
+                {% for field in form %}
+                    <p>
+                        {{ field.label_tag }} <br>
+                        {{ field }}
+                        {% if field.errors %}
+                            <span class="error-text">{{ field.errors.0 }}</span>
+                        {% endif %}
+                    </p>
+                {% endfor %}
+                
+                <button type="submit">Submit Details</button>
+            </form>
+        </div>
+
+        <hr>
+
+        {% if request.GET.blood_group or request.GET.location %}
+            <h2 style="color: #27ae60;">🔍 Search Results</h2>
+        {% else %}
+            <h2>Available Donors</h2>
+        {% endif %}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Age</th>
+                    <th>Blood Group</th>
+                    <th>Contact</th>
+                    <th>Location</th>
+                    <th>Last Donated</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for donor in donors %}
+                <tr>
+                    <td>{{ donor.name }}</td>
+                    <td>{{ donor.age }}</td>
+                    <td><span class="blood-tag">{{ donor.blood_group }}</span></td>
+                    <td>{{ donor.phone }}</td>
+                    <td>{{ donor.location }}</td>
+                    <td>{{ donor.last_donation_date }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="text-align: center;">No donors found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
